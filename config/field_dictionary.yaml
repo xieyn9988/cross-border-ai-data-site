@@ -19,11 +19,11 @@ entities:
                    "FBA", "FBM", "海外仓", "本土店", "全托管", "半托管", "自营"]
       shop: {synonyms: ["店铺", "店铺名称", "shop", "store", "商家"]}
       status: {synonyms: ["订单状态", "状态", "status"]}
-      amount: {synonyms: ["成交价", "订单支付金额", "买家实付", "amount", "payment", "实付金额"]}
+      amount: {synonyms: ["成交价", "订单支付金额", "买家实付", "amount", "payment", "实付金额", "sales", "销售额"]}
       quantity: {synonyms: ["实发数量", "下单数量", "数量", "qty", "quantity", "购买数量"]}
       product_id: {synonyms: ["商品ID", "货品ID", "spu_id", "product_id"]}
       product_name: {synonyms: ["货品名称", "商品名称", "product_name", "sku_name", "品名"]}
-      sku_code: {synonyms: ["SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]}
+      sku_code: {synonyms: ["库存SKU", "库存SKU编码", "SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]}
       receivable: {synonyms: ["应收金额", "receivable"]}
       sales: {synonyms: ["销售额", "销售金额", "sales", "gmv"]}
       order_num: {synonyms: ["订单数", "订单数量", "order_num", "order_count"]}
@@ -49,7 +49,8 @@ entities:
       fba_fee: {synonyms: ["FBA费", "FBA费用", "配送费", "fba_fee"]}
       ad_cost: {synonyms: ["广告费", "广告成本", "推广费", "ad_cost"]}
       currency: {synonyms: ["币种", "货币", "currency", "币别"]}
-
+      customer_id: {synonyms: ["客户ID", "客户编号", "买家ID", "customer_id", "buyer_id", "客户"]}
+        
   # ============ 库存 ============
   inventory:
     fields:
@@ -64,7 +65,7 @@ entities:
                    "FBA", "FBM", "海外仓", "本土店", "全托管", "半托管", "自营"]
       shop: {synonyms: ["店铺", "店铺名称", "商家", "shop", "store"]}
       warehouse: {synonyms: ["仓库", "仓库名称", "发货仓", "warehouse"]}
-      sku_code: {synonyms: ["SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]}
+      sku_code: {synonyms: ["库存SKU", "库存SKU编码", "SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]}
       sku_name: {synonyms: ["SKU规格", "规格名称", "SKU名称", "规格"]}
       product_id: {synonyms: ["商品ID", "货品ID", "spu_id", "product_id"]}
       product_name: {synonyms: ["商品名称", "货品名称", "品名", "product_name"]}
@@ -90,7 +91,7 @@ entities:
   # ============ SKU ============
   sku:
     fields:
-      sku_code: {synonyms: ["SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]}
+      sku_code: {synonyms: ["库存SKU", "库存SKU编码", "SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]}
       sku_name: {synonyms: ["SKU规格", "规格名称", "SKU名称", "规格"]}
       product_id: {synonyms: ["商品ID", "货品ID", "spu_id", "product_id"]}
       cost: {synonyms: ["成本", "成本价", "进价", "cost"]}
@@ -112,7 +113,7 @@ entities:
   # ============ 竞品价格 ============
   pricing:
     fields:
-      sku: {synonyms: ["sku", "货品编号", "商品编码", "编码", "SKU"]}
+      sku: {synonyms: ["SKU编码", "库存SKU", "sku", "货品编号", "商品编码", "编码", "SKU"]}
       my_price: {synonyms: ["my_price", "我方价格", "我的价格", "本店价格"]}
       competitor_price: {synonyms: ["competitor_price", "竞品价格", "对手价格", "竞对价格"]}
 
@@ -138,7 +139,7 @@ entities:
       shop:
         synonyms: ["店铺", "店铺名称", "商家", "shop", "store"]
       sku_code:
-        synonyms: ["SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]
+        synonyms: ["库存SKU", "SKU", "sku_code", "规格编码", "货品编号"]
       stock:
         synonyms: ["当前库存", "库存", "可用库存", "库存数量", "实际库存", "stock"]
       daily_sales:

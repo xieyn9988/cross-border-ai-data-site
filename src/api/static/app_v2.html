@@ -476,6 +476,9 @@
           const data = await r.json();
           renderFileInfo(selectedFiles, data);
           renderScenarios(data);
+          // ★ 清空结果区（避免显示上一次结果）
+          RESULT_LIST.innerHTML = "";
+          SUMMARY.textContent = "";
           STEP_SCENARIOS.classList.remove("hidden");
           STEP_RUN.classList.remove("hidden");
           RESULT_STEP.classList.add("hidden");
@@ -505,7 +508,7 @@
         SCENARIOS.innerHTML = data.scenarios
           .map((s) => {
             const supported = s.supported;
-            const checked = supported ? "checked" : "";
+            const checked = "";            
             const disabled = supported ? "" : "disabled";
             const cls = supported ? "supported" : "disabled";
             const tag = supported
@@ -626,7 +629,7 @@
         </div>`;
           })
           .join("");
-        SUMMARY.textContent = `运行 ID: ${data.run_id} · 完成于 ${data.finished_at}`;
+        SUMMARY.textContent = `运行 ID: ${data.run_id} · 完成于 ${data.finished_at}<br/>上传文件：${(data.uploaded || []).join('、')}`;
         RESULT_STEP.scrollIntoView({ behavior: "smooth" });
       }
     </script>

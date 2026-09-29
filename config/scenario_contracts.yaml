@@ -27,7 +27,7 @@ contracts:
       region: "区域"
       product_id: "商品ID"
       product_name: "商品名称"
-      sku_code: "SKU编码"
+      sku_code: "库存SKU"
       refund_status: "退款状态"
       refund_amount: "退款金额"
       pay_time: "付款时间"
@@ -56,7 +56,7 @@ contracts:
     optional_fields: [order_num, sales, exposure, quantity]
     field_labels:
       region: "区域"
-      amount: "成交价/支付金额"
+      amount: "销售额"
       order_num: "订单数"
       sales: "销售额"
       exposure: "曝光量"
@@ -97,7 +97,7 @@ contracts:
       warehouse: "仓库"
       product_id: "商品ID"
       product_name: "商品名称"
-      sku_code: "SKU编码"
+      sku_code: "库存SKU"
       sku_name: "SKU规格"
       stock: "当前库存"
       safety_stock: "安全库存"
@@ -124,7 +124,7 @@ contracts:
     field_labels:
       platform: "平台"
       shop: "店铺"
-      sku_code: "SKU编码"
+      sku_code: "库存SKU"
       stock: "当前库存"
       daily_sales: "日均销量"
       周转率: "周转率"
@@ -140,7 +140,7 @@ contracts:
     field_labels:
       platform: "平台"
       shop: "店铺"
-      sku_code: "SKU编码"
+      sku_code: "库存SKU"
       product_name: "商品名称"
       stock: "当前库存"
       daily_sales: "日均销量"

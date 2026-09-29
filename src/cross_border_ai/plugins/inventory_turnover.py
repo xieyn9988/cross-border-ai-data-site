@@ -72,7 +72,11 @@ def inventory_turnover(
     # 汇总
     summary = (
         df.groupby("周转等级")
-        .agg(SKU数量=("sku_code", "nunique"), 总库存=("stock", "sum"))
+        .agg(
+            SKU数量=("sku_code", "nunique"),
+            记录数=("sku_code", "count"),
+            总库存=("stock", "sum"),
+        )
         .reset_index()
     )
     write_csv_with_labels(summary, f"{out_dir}/inventory_turnover_summary.csv", labels)

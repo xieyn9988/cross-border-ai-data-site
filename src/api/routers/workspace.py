@@ -61,30 +61,56 @@ def list_available() -> Dict[str, Any]:
 
 
 # ============================================================
-# 上传前推荐：接收多个文件，取第一个文件识别
+# 上传前推荐：接收多个文件，每个文件 + 每个场景分别评估
 # ============================================================
 @router.post("/api/workspace/recommend")
-async def recommend(files: List[UploadFile] = File(...)) -> Dict[str, Any]:
-    """接收多个文件，用第一个文件识别字段，返回场景可用性。"""
-    if not files:
-        raise HTTPException(400, "没有上传文件")
+async def recommend(files: List[UploadFile] = File(...)):
+    ...
+    # 读所有文件的列名
+    all_columns = []
+    for f in files:
+        content = await f.read()
+        cols = _read_columns(content)
+        all_columns.append(cols)
 
-    # 用第一个文件识别（其他文件列名应一致；若不一致，在 process 里逐个处理）
-    first = files[0]
-    if not first.filename.endswith(".csv"):
-        raise HTTPException(400, "仅支持 CSV 文件")
-
-    content = await first.read()
-    columns = _read_columns(content)
-
+    # 对每个场景，判断"它是否能匹配任意一个文件的列名"
     mapper = get_mapper()
-    scenarios = mapper.evaluate_all(columns)
+
+    scenarios = []
+    for c in mapper.contracts:
+        handler = c["handler"]
+        entity = c["entity"]
+        required = c.get("required_fields", [])
+
+        # 遍历每个文件的列名
+        best_supported = False
+        best_missing = []
+        for cols in all_columns:
+            r = mapper.evaluate_contract(entity, required, cols)
+            if r["supported"]:
+                best_supported = True
+                best_missing = []
+                break
+            if not best_missing or len(r["missing"]) < len(best_missing):
+                best_missing = r["missing"]
+
+        scenarios.append(
+            {
+                "handler": handler,
+                "name": c.get("name", handler),
+                "description": c.get("description", ""),
+                "required_fields": required,
+                "optional_fields": c.get("optional_fields", []),
+                "field_labels": c.get("field_labels", {}),
+                "supported": best_supported,
+                "mapping": {},
+                "missing": best_missing,
+            }
+        )
 
     return {
-        "filename": first.filename,
         "file_count": len(files),
-        "detected_columns": columns,
-        "column_count": len(columns),
+        "detected_columns": all_columns[0] if all_columns else [],
         "scenarios": scenarios,
     }
 
@@ -137,32 +163,68 @@ async def process(
     for handler_name in selected:
         contract = mapper.get_contract(handler_name)
         if contract is None:
-            results.append({
-                "handler": handler_name,
-                "status": "error",
-                "message": f"未在 scenario_contracts.yaml 声明：{handler_name}",
-            })
+            results.append(
+                {
+                    "handler": handler_name,
+                    "status": "error",
+                    "message": f"未在 scenario_contracts.yaml 声明：{handler_name}",
+                }
+            )
             continue
 
-        # 字段评估（用第一个文件的列名）
-        eval_result = mapper.evaluate_contract(
-            contract["entity"], contract.get("required_fields", []), first_columns
-        )
-        if not eval_result["supported"]:
-            results.append({
-                "handler": handler_name,
-                "status": "error",
-                "message": f"上传文件缺少业务字段：{eval_result['missing']}",
-            })
-            continue
-
+        # 字段评估
         try:
             func = get_scenario(handler_name)
+
+            # ★ 逐个文件评估，找出"匹配本场景字段"的文件
+            entity = contract["entity"]
+            required = contract.get("required_fields", [])
+            matched_files = []
+            matched_eval = None
+            best_missing = None
+
+            for path in saved_paths:
+                try:
+                    cols = _read_columns(Path(path).read_bytes())
+                    #print(f"[DEBUG] handler={handler_name}, file={Path(path).name}, cols={cols}")
+                    r = mapper.evaluate_contract(entity, required, cols)
+                    #print(f"[DEBUG]   required={required}, supported={r['supported']}, missing={r['missing']}")
+                    if r["supported"]:
+                        matched_files.append(path)
+                        if matched_eval is None:
+                            matched_eval = r  
+                    else:
+                        # 记录"最接近匹配"的错误（缺字段最少）
+                        if best_missing is None or len(r["missing"]) < len(
+                            best_missing
+                        ):
+                            best_missing = r["missing"]                
+                except Exception as e:
+                    #print(f"[DEBUG] handler={handler_name}, file={Path(path).name}, EXCEPTION={type(e).__name__}: {e}")
+                    continue
+
+            # 没有任何文件匹配 → 报错（用最接近的缺字段信息）
+            if not matched_files:
+                results.append(
+                    {
+                        "handler": handler_name,
+                        "status": "error",
+                        "message": f"上传文件缺少业务字段：{best_missing or required}",
+                    }
+                )
+                continue
+
+            # 特殊场景（多文件）：传所有文件；普通场景：只传匹配的文件
+            if "required_files" in contract:
+                target_files = saved_paths
+            else:
+                target_files = matched_files
+
             params = {
-                "field_mapping": eval_result["mapping"],
+                "field_mapping": matched_eval["mapping"] if matched_eval else {},
                 "field_labels": contract.get("field_labels", {}),
-                "input_files": saved_paths,      # ★ 传所有文件
-                "input_path": saved_paths[0],    # 兼容只读单文件的插件
+                "input_files": target_files,
+                "input_path": target_files[0],
             }
             df = func(cfg, params)
 
@@ -173,58 +235,72 @@ async def process(
             candidates.sort(key=lambda p: p.stat().st_mtime)
 
             if not candidates:
-                results.append({
-                    "handler": handler_name,
-                    "status": "error",
-                    "message": "本次运行未产生输出文件",
-                })
+                results.append(
+                    {
+                        "handler": handler_name,
+                        "status": "error",
+                        "message": "本次运行未产生输出文件",
+                    }
+                )
                 continue
 
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
             cn_name_base = contract.get("name", handler_name)
-            output_files = (df.attrs.get("output_files") if df is not None else None) or []
+            output_files = (
+                df.attrs.get("output_files") if df is not None else None
+            ) or []
 
             if output_files:
                 downloads = []
                 for fname, alias in output_files:
                     if (RESULT_DIR / fname).exists():
                         cn = f"{cn_name_base}_{alias}_{ts}.csv"
-                        downloads.append({
-                            "download_token": fname,
-                            "download_name": cn,
-                            "download_url": (
-                                f"/api/workspace/download/{fname}"
-                                f"?as_name={quote(cn)}"
-                            ),
-                        })
-                results.append({
-                    "handler": handler_name,
-                    "status": "success",
-                    "rows": int(len(df)) if df is not None else 0,
-                    "downloads": downloads,
-                })
+                        downloads.append(
+                            {
+                                "download_token": fname,
+                                "download_name": cn,
+                                "download_url": (
+                                    f"/api/workspace/download/{fname}"
+                                    f"?as_name={quote(cn)}"
+                                ),
+                            }
+                        )
+                results.append(
+                    {
+                        "handler": handler_name,
+                        "status": "success",
+                        "rows": int(len(df)) if df is not None else 0,
+                        "downloads": downloads,
+                    }
+                )
             else:
                 latest = candidates[-1]
                 cn_download_name = f"{cn_name_base}_{ts}.csv"
-                results.append({
-                    "handler": handler_name,
-                    "status": "success",
-                    "rows": int(len(df)) if df is not None else 0,
-                    "download_token": latest.name,
-                    "download_name": cn_download_name,
-                    "download_url": (
-                        f"/api/workspace/download/{latest.name}"
-                        f"?as_name={quote(cn_download_name)}"
-                    ),
-                })
+                results.append(
+                    {
+                        "handler": handler_name,
+                        "status": "success",
+                        "rows": int(len(df)) if df is not None else 0,
+                        "download_token": latest.name,
+                        "download_name": cn_download_name,
+                        "download_url": (
+                            f"/api/workspace/download/{latest.name}"
+                            f"?as_name={quote(cn_download_name)}"
+                        ),
+                    }
+                )
         except CrossBorderAIError as e:
-            results.append({"handler": handler_name, "status": "error", "message": str(e)})
+            results.append(
+                {"handler": handler_name, "status": "error", "message": str(e)}
+            )
         except Exception as e:
-            results.append({
-                "handler": handler_name,
-                "status": "error",
-                "message": f"{type(e).__name__}: {e}",
-            })
+            results.append(
+                {
+                    "handler": handler_name,
+                    "status": "error",
+                    "message": f"{type(e).__name__}: {e}",
+                }
+            )
 
     return {
         "run_id": run_id,
@@ -305,7 +381,7 @@ def download_sample(name: str) -> FileResponse:
 
     return FileResponse(
         path,
-        filename=download_name,     # ★ 用中文下载名
+        filename=download_name,  # ★ 用中文下载名
         media_type="text/csv",
         headers={
             "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",

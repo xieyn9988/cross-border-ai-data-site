@@ -89,13 +89,21 @@ class FieldMapper:
             "missing": missing,
         }
 
-    def evaluate_all(self, columns: List[str]) -> List[Dict[str, Any]]:
-        """评估所有场景，返回可用性列表。"""
+    def evaluate_all(
+        self, columns: List[str], file_count: int = 1
+    ) -> List[Dict[str, Any]]:
+        """评估所有场景，返回可用性列表。
+
+        参数：
+          columns:    上传文件的列名列表（用第一个文件）
+          file_count: 上传的文件数（用于判断"多文件场景"如运营驾驶舱）
+        """
         out = []
         for c in self.contracts:
-            # 特殊场景：需要多个文件（如运营驾驶舱）
+            # ---- 特殊场景：需要多文件（如运营驾驶舱）----
             if "required_files" in c:
-                # /recommend 阶段只有一个文件，标记为"需要多文件"
+                required_count = len(c["required_files"])
+                supported = file_count >= required_count
                 out.append({
                     "handler": c["handler"],
                     "name": c.get("name", c["handler"]),
@@ -104,14 +112,15 @@ class FieldMapper:
                     "required_fields": c.get("required_fields", []),
                     "optional_fields": c.get("optional_fields", []),
                     "field_labels": c.get("field_labels", {}),
-                    "supported": False,                       # ★ 不标为可用
+                    "supported": supported,                      # ★ 按文件数判断
                     "mapping": {},
-                    "missing": [],
-                    "note": f"需要同时上传：{'、'.join(c['required_files'])}",  # ★ 提示
+                    "missing": [] if supported else [f"需要 {required_count} 个文件"],
+                    "note": None if supported else f"需要同时上传：{'、'.join(c['required_files'])}",
                     "requires_files": c["required_files"],
                 })
                 continue
 
+            # ---- 普通场景：按字段匹配判断 ----
             result = self.evaluate_contract(
                 c["entity"], c.get("required_fields", []), columns
             )

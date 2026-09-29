@@ -41,13 +41,27 @@ def weekly_report(
     df = pd.concat(frames, ignore_index=True)
     df = df.dropna(subset=["pay_time", "amount"])
 
-    # 时间边界
+    # 智能时间窗口：
+    #   1. 先按"自然周"（最近 7 天 vs 前 7 天）
+    #   2. 若数据都在过去，则以"数据最后一天"为锚点，往前推 7/14 天
     now = datetime.now()
     this_week_start = now - timedelta(days=7)
     last_week_start = now - timedelta(days=14)
 
     this_week = df[df["pay_time"] >= this_week_start]
     last_week = df[(df["pay_time"] >= last_week_start) & (df["pay_time"] < this_week_start)]
+
+    # 兜底：如果两个窗口都空，则以"数据最后时间"为锚点
+    if this_week.empty and last_week.empty and not df.empty:
+        max_time = df["pay_time"].max()
+        this_week_start = max_time - timedelta(days=7)
+        last_week_start = max_time - timedelta(days=14)
+
+        this_week = df[df["pay_time"] >= this_week_start]
+        last_week = df[
+            (df["pay_time"] >= last_week_start)
+            & (df["pay_time"] < this_week_start)
+        ]
 
     def _metrics(sub: pd.DataFrame) -> Dict:
         if sub.empty:
