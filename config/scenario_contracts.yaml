@@ -1,0 +1,303 @@
+contracts:
+
+  # ========================================================
+  # 一、销售类
+  # ========================================================
+  - handler: order_analysis
+    entity: order
+    name: "订单分析"
+    description: "平台/国家/商品/退款/履约/利润 多维度分析"
+    required_fields: [order_id, platform, shop, status, amount, quantity, product_name]
+    optional_fields: [mode, country, state, city, region, product_id, sku_code,
+                      receivable, refund_status, refund_amount, pay_time, ship_time,
+                      deliver_time, logistics_company, cost, platform_fee, fba_fee,
+                      ad_cost, currency]
+    field_labels:
+      order_id: "订单编号"
+      platform: "平台"
+      mode: "模式"
+      shop: "店铺"
+      status: "订单状态"
+      amount: "成交价"
+      quantity: "数量"
+      receivable: "应收金额"
+      country: "国家/站点"
+      state: "州/省"
+      city: "城市"
+      region: "区域"
+      product_id: "商品ID"
+      product_name: "商品名称"
+      sku_code: "SKU编码"
+      refund_status: "退款状态"
+      refund_amount: "退款金额"
+      pay_time: "付款时间"
+      ship_time: "发货时间"
+      deliver_time: "妥投时间"
+      logistics_company: "物流公司"
+      cost: "成本"
+      platform_fee: "平台佣金"
+      fba_fee: "FBA费"
+      ad_cost: "广告费"
+      currency: "币种"
+      总订单数: "总订单数"
+      总成交额: "总成交额"
+      平均客单价: "平均客单价"
+      退款率: "退款率"
+      平均发货时长_小时: "平均发货时长(小时)"
+      平均妥投天数: "平均妥投天数"
+      毛利: "毛利"
+      毛利率: "毛利率"
+
+  - handler: business_stat
+    entity: order
+    name: "业务数据统计"
+    description: "按区域聚合销售额、订单数、曝光量"
+    required_fields: [region, amount]
+    optional_fields: [order_num, sales, exposure, quantity]
+    field_labels:
+      region: "区域"
+      amount: "成交价/支付金额"
+      order_num: "订单数"
+      sales: "销售额"
+      exposure: "曝光量"
+      总成交额: "总成交额"
+      转化率: "转化率"
+      平均客单价: "平均客单价"
+
+  - handler: sales_trend
+    entity: order
+    name: "销售趋势分析"
+    description: "按日/周/月看销售额与订单量走势"
+    required_fields: [order_id, amount, pay_time]
+    optional_fields: [platform, shop, country]
+    field_labels:
+      pay_time: "付款时间"
+      amount: "成交价"
+      order_id: "订单编号"
+      日期: "日期"
+      订单数: "订单数"
+      总成交额: "总成交额"
+      环比: "环比"
+
+  # ========================================================
+  # 二、库存类
+  # ========================================================
+  - handler: inventory_alert
+    entity: inventory
+    name: "库存预警"
+    description: "平台/模式/店铺/SKU 动态阈值预警"
+    required_fields: [platform, shop, sku_code, stock, safety_stock]
+    optional_fields: [mode, warehouse, product_id, product_name, sku_name,
+                      in_transit, locked_stock, daily_sales, sales_30d,
+                      replenish_days, safety_days, category, cost]
+    field_labels:
+      platform: "平台"
+      mode: "模式"
+      shop: "店铺"
+      warehouse: "仓库"
+      product_id: "商品ID"
+      product_name: "商品名称"
+      sku_code: "SKU编码"
+      sku_name: "SKU规格"
+      stock: "当前库存"
+      safety_stock: "安全库存"
+      in_transit: "在途库存"
+      locked_stock: "锁定库存"
+      daily_sales: "日均销量"
+      sales_30d: "近30天销量"
+      replenish_days: "补货周期(天)"
+      safety_days: "安全天数"
+      category: "类目"
+      cost: "成本"
+      动态预警阈值: "动态预警阈值"
+      预警状态: "预警状态"
+      可售天数: "可售天数"
+      建议补货量: "建议补货量"
+      行动建议: "行动建议"
+
+  - handler: inventory_turnover
+    entity: inventory
+    name: "库存周转分析"
+    description: "计算 ITO（库存周转率）和 DOS（库存天数）"
+    required_fields: [platform, shop, sku_code, stock, daily_sales]
+    optional_fields: [cost, sales_30d, category]
+    field_labels:
+      platform: "平台"
+      shop: "店铺"
+      sku_code: "SKU编码"
+      stock: "当前库存"
+      daily_sales: "日均销量"
+      周转率: "周转率"
+      库存天数: "库存天数"
+      周转等级: "周转等级"
+
+  - handler: slow_moving
+    entity: inventory
+    name: "滞销库存识别"
+    description: "识别库存天数超过阈值的 SKU"
+    required_fields: [platform, shop, sku_code, stock, daily_sales]
+    optional_fields: [cost, category, product_name]
+    field_labels:
+      platform: "平台"
+      shop: "店铺"
+      sku_code: "SKU编码"
+      product_name: "商品名称"
+      stock: "当前库存"
+      daily_sales: "日均销量"
+      库存天数: "库存天数"
+      积压成本: "积压成本"
+      建议: "建议"
+
+  # ========================================================
+  # 三、营销类
+  # ========================================================
+  - handler: ad_performance
+    entity: ad
+    name: "广告投放效果分析"
+    description: "计算 ROI / ACOS / CTR"
+    required_fields: [campaign, spend, sales, clicks, impressions]
+    field_labels:
+      campaign: "广告活动"
+      spend: "花费"
+      sales: "销售额"
+      clicks: "点击"
+      impressions: "曝光"
+      roi: "ROI"
+      acos: "ACOS"
+      ctr: "CTR"
+
+  - handler: competitor_price
+    entity: pricing
+    name: "竞品价格监控"
+    description: "对比竞品价格，标记价格偏离"
+    required_fields: [sku, my_price, competitor_price]
+    field_labels:
+      sku: "SKU/货品编号"
+      my_price: "我方价格"
+      competitor_price: "竞品价格"
+      price_gap_pct: "价格差比"
+      alert: "预警状态"
+
+  - handler: material_process
+    entity: material
+    name: "素材批量处理"
+    description: "批量生成 AI 绘图提示词"
+    required_fields: [material_id, raw_text]
+    optional_fields: [category]
+    field_labels:
+      material_id: "素材ID"
+      raw_text: "原始描述"
+      category: "类目"
+      ai_prompt: "AI提示词"
+
+  - handler: listing_optimize
+    entity: listing
+    name: "Listing 页面优化"
+    description: "优化标题与描述"
+    required_fields: [pid, raw_title, raw_desc]
+    field_labels:
+      pid: "商品ID"
+      raw_title: "原始标题"
+      raw_desc: "原始描述"
+      optimized_title: "优化后标题"
+      optimized_desc: "优化后描述"
+
+  # ========================================================
+  # 四、财务类
+  # ========================================================
+  - handler: revenue_analysis
+    entity: order
+    name: "收入分析"
+    description: "按平台/国家/币种汇总收入"
+    required_fields: [order_id, platform, amount]
+    optional_fields: [country, currency, shop, mode]
+    field_labels:
+      platform: "平台"
+      country: "国家"
+      currency: "币种"
+      shop: "店铺"
+      amount: "成交价"
+      总订单数: "总订单数"
+      原币金额: "原币金额"
+      折合人民币: "折合人民币"
+      平均客单价: "平均客单价"
+
+  - handler: cost_analysis
+    entity: order
+    name: "成本分析"
+    description: "分析成本结构与费用占比"
+    required_fields: [order_id, amount]
+    optional_fields: [cost, platform_fee, fba_fee, ad_cost, platform, shop]
+    field_labels:
+      order_id: "订单编号"
+      amount: "成交价"
+      cost: "成本"
+      platform_fee: "平台佣金"
+      fba_fee: "FBA费"
+      ad_cost: "广告费"
+      总成交额: "总成交额"
+      总成本: "总成本"
+      总费用: "总费用"
+      毛利: "毛利"
+      毛利率: "毛利率"
+      成本占比: "成本占比"
+
+  # ========================================================
+  # 五、决策类
+  # ========================================================
+  - handler: business_dashboard
+    entity: dashboard
+    name: "运营驾驶舱"
+    description: "订单 + 库存交叉，输出今日必做清单"
+    required_files: ["order", "inventory"]
+    field_labels:
+      优先级: "优先级"
+      类型: "类型"
+      平台: "平台"
+      SKU: "SKU"
+      问题: "问题"
+      建议行动: "建议行动"
+      截止时间: "截止时间"
+
+  - handler: weekly_report
+    entity: order
+    name: "业务周报"
+    description: "自动生成周报：核心指标 + 环比 + 洞察"
+    required_fields: [order_id, amount, pay_time]
+    optional_fields: [platform, country, status, refund_status]
+    field_labels:
+      指标: "指标"
+      本周: "本周"
+      上周: "上周"
+      环比: "环比"
+      趋势: "趋势"
+
+  - handler: anomaly_alert
+    entity: order
+    name: "异常告警"
+    description: "识别退款率突增/订单骤降/库存骤降"
+    required_fields: [order_id, amount, pay_time]
+    optional_fields: [refund_status, platform, country]
+    field_labels:
+      告警类型: "告警类型"
+      严重程度: "严重程度"
+      对象: "对象"
+      当前值: "当前值"
+      历史值: "历史值"
+      变化率: "变化率"
+      建议: "建议"
+
+  # ========================================================
+  # 六、客户类
+  # ========================================================
+  - handler: repurchase_analysis
+    entity: order
+    name: "复购分析"
+    description: "识别多次下单的客户"
+    required_fields: [customer_id, order_id, amount]
+    optional_fields: [platform, country]
+    field_labels:
+      customer_id: "客户ID"
+      订单数: "订单数"
+      总消费额: "总消费额"
+      客户类型: "客户类型"

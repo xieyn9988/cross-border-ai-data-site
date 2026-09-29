@@ -1,0 +1,24 @@
+paths:
+  data_dir: "./data"
+  output_dir: "./output"
+  log_dir: "./output/logs"
+
+files:
+  shop_data: "shop_data.csv"
+  material: "material.csv"
+  listing: "listing.csv"
+  inventory: "inventory.csv"
+  competitor_price: "competitor_price.csv"
+  ad_performance: "ad_performance.csv"
+
+business_rules:
+  conversion_rate_fill: 0.0
+  numeric_columns: ["order_num", "sales", "exposure"]
+
+prompt_templates:
+  material: "e-commerce product photo, {raw_text}, {platform} marketplace, clean background, high quality"
+  listing_title: "Premium {raw_title}"
+  listing_desc: "High-performance {raw_desc}"
+
+defaults:
+  platform: "amazon"

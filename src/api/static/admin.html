@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>跨境智能数据站点 · 业务配置面板</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, "PingFang SC", sans-serif; background: #f5f7fa; margin: 0; padding: 24px; color: #1f2937; }
+    .container { max-width: 880px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    h1 { font-size: 20px; margin: 0; }
+    .actions button { padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; margin-left: 8px; }
+    .save { background: #2563eb; color: white; }
+    .save:hover { background: #1d4ed8; }
+    .reset { background: #e5e7eb; color: #374151; }
+    .run { background: #10b981; color: white; }
+    .run:hover { background: #059669; }
+    .run:disabled { background: #9ca3af; cursor: not-allowed; }
+    .card { background: white; border-radius: 10px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); display: flex; justify-content: space-between; align-items: flex-start; }
+    .card .info { flex: 1; }
+    .card .title { font-weight: 600; margin-bottom: 4px; }
+    .card .desc { color: #6b7280; font-size: 13px; }
+    .card .params { margin-top: 10px; display: flex; gap: 16px; flex-wrap: wrap; }
+    .param { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #374151; }
+    .param input { width: 100px; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; }
+    .switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; margin-left: 16px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; background: #d1d5db; border-radius: 26px; cursor: pointer; transition: .2s; }
+    .slider:before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: .2s; }
+    input:checked + .slider { background: #10b981; }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .toast { position: fixed; top: 24px; right: 24px; background: #1f2937; color: white; padding: 12px 20px; border-radius: 8px; font-size: 14px; opacity: 0; transition: .3s; pointer-events: none; }
+    .toast.show { opacity: 1; }
+    .toast.error { background: #dc2626; }
+    .backups { margin-top: 16px; font-size: 13px; color: #6b7280; }
+    .backups a { color: #2563eb; cursor: pointer; margin-right: 12px; }
+    .result-panel { background: #111827; color: #d1d5db; border-radius: 10px; padding: 16px 20px; margin-top: 20px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; white-space: pre-wrap; display: none; }
+    .result-panel.show { display: block; }
+    .result-panel .ok { color: #34d399; }
+    .result-panel .skip { color: #fbbf24; }
+    .result-panel .err { color: #f87171; }
+    footer { margin-top: 24px; color: #9ca3af; font-size: 12px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>跨境智能数据站点 · 业务配置面板</h1>
+      <div class="actions">
+        <button class="reset" onclick="load()">重置</button>
+        <button class="save" onclick="save()">保存</button>
+        <button class="run" onclick="runNow()">▶ 立即试运行</button>
+      </div>
+    </header>
+
+    <div id="list"></div>
+
+    <div class="backups">
+      <strong>历史版本：</strong>
+      <span id="backups">加载中…</span>
+    </div>
+
+    <div class="result-panel" id="result"></div>
+
+    <footer>配置文件：config/scenarios.yaml　·　保存后自动备份，可一键恢复</footer>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let data = { scenarios: [] };
+
+    function toast(msg, isError = false) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.className = "toast show" + (isError ? " error" : "");
+      setTimeout(() => t.className = "toast", 2200);
+    }
+
+    function render() {
+      const list = document.getElementById("list");
+      list.innerHTML = "";
+      data.scenarios.forEach((sc, idx) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const paramsHtml = Object.entries(sc.params || {}).map(([k, v]) => {
+          const type = typeof v === "number" ? "number" : "text";
+          return `<label class="param">${k}：<input type="${type}" value="${v}" data-idx="${idx}" data-key="${k}" /></label>`;
+        }).join("");
+
+        card.innerHTML = `
+          <div class="info">
+            <div class="title">${sc.name}</div>
+            <div class="desc">${sc.description || ""}</div>
+            ${paramsHtml ? `<div class="params">${paramsHtml}</div>` : ""}
+          </div>
+          <label class="switch">
+            <input type="checkbox" ${sc.enabled ? "checked" : ""} data-idx="${idx}" data-toggle="1" />
+            <span class="slider"></span>
+          </label>
+        `;
+        list.appendChild(card);
+      });
+
+      document.querySelectorAll('input[data-toggle]').forEach(el => {
+        el.addEventListener("change", e => {
+          data.scenarios[e.target.dataset.idx].enabled = e.target.checked;
+        });
+      });
+      document.querySelectorAll('input[data-key]').forEach(el => {
+        el.addEventListener("change", e => {
+          const idx = e.target.dataset.idx;
+          const key = e.target.dataset.key;
+          const val = e.target.type === "number" ? Number(e.target.value) : e.target.value;
+          data.scenarios[idx].params[key] = val;
+        });
+      });
+    }
+
+    async function load() {
+      const r = await fetch("/api/admin/scenarios");
+      data = await r.json();
+      render();
+      loadBackups();
+    }
+
+    async function save() {
+      const r = await fetch("/api/admin/scenarios", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (r.ok) {
+        const j = await r.json();
+        toast("已保存，备份：" + j.backup);
+        loadBackups();
+      } else {
+        toast("保存失败：" + (await r.text()), true);
+      }
+    }
+
+    async function loadBackups() {
+      const r = await fetch("/api/admin/backups");
+      const list = await r.json();
+      const el = document.getElementById("backups");
+      if (!list.length) { el.textContent = "暂无"; return; }
+      el.innerHTML = list.slice(0, 5).map(f =>
+        `<a onclick="restore('${f}')">${f.replace("scenarios_", "").replace(".yaml", "")}</a>`
+      ).join("");
+    }
+
+    async function restore(name) {
+      if (!confirm("确认恢复到 " + name + "？")) return;
+      const r = await fetch("/api/admin/restore/" + name, { method: "POST" });
+      if (r.ok) { toast("已恢复"); load(); }
+      else { toast("恢复失败", true); }
+    }
+
+    async function runNow() {
+      const btn = document.querySelector(".run");
+      const panel = document.getElementById("result");
+      btn.disabled = true;
+      btn.textContent = "运行中…";
+      panel.className = "result-panel show";
+      panel.textContent = "正在执行 pipeline，请稍候…";
+
+      try {
+        const r = await fetch("/api/admin/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        if (!r.ok) {
+          panel.innerHTML = `<span class="err">执行失败：${await r.text()}</span>`;
+          return;
+        }
+        const j = await r.json();
+        const lines = ["==== 执行结果 ===="];
+        for (const [name, status] of Object.entries(j.results)) {
+          const cls = status === "success" ? "ok"
+                    : status === "disabled" ? "skip"
+                    : "err";
+          const icon = status === "success" ? "✅"
+                    : status === "disabled" ? "⏭️"
+                    : "❌";
+          lines.push(`<span class="${cls}">${icon} ${name}: ${status}</span>`);
+        }
+        lines.push("");
+        lines.push(`输出目录：${j.output_dir}`);
+        panel.innerHTML = lines.join("\n");
+      } catch (e) {
+        panel.innerHTML = `<span class="err">网络错误：${e.message}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "▶ 立即试运行";
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

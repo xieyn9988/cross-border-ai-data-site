@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Output
+output/*
+!output/.gitkeep
+output/logs/
+config/scenarios.backup/
+
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+*.bat.bak
+
+
+output/uploads/
+output/results/
+output/workspace/
+output/logs/

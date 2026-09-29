@@ -1,0 +1,145 @@
+# ============================================================
+# 业务字段字典（业务对象驱动）
+# ============================================================
+
+entities:
+
+  # ============ 订单 ============
+  order:
+    fields:
+      order_id: {synonyms: ["订单编号", "订单号", "order_id", "order_no", "单号", "订单ID"]}
+      platform:
+        synonyms: ["平台", "销售平台", "渠道", "platform", "channel",
+                   "Amazon", "亚马逊", "Shopee", "虾皮", "TikTok", "Temu",
+                   "Shein", "eBay", "Lazada", "Wish", "AliExpress", "速卖通",
+                   "Walmart", "沃尔玛", "Shopify", "淘宝", "天猫", "京东",
+                   "拼多多", "抖音", "快手", "小红书", "得物"]
+      mode:
+        synonyms: ["模式", "仓配模式", "履约模式", "mode",
+                   "FBA", "FBM", "海外仓", "本土店", "全托管", "半托管", "自营"]
+      shop: {synonyms: ["店铺", "店铺名称", "shop", "store", "商家"]}
+      status: {synonyms: ["订单状态", "状态", "status"]}
+      amount: {synonyms: ["成交价", "订单支付金额", "买家实付", "amount", "payment", "实付金额"]}
+      quantity: {synonyms: ["实发数量", "下单数量", "数量", "qty", "quantity", "购买数量"]}
+      product_id: {synonyms: ["商品ID", "货品ID", "spu_id", "product_id"]}
+      product_name: {synonyms: ["货品名称", "商品名称", "product_name", "sku_name", "品名"]}
+      sku_code: {synonyms: ["SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]}
+      receivable: {synonyms: ["应收金额", "receivable"]}
+      sales: {synonyms: ["销售额", "销售金额", "sales", "gmv"]}
+      order_num: {synonyms: ["订单数", "订单数量", "order_num", "order_count"]}
+      exposure: {synonyms: ["曝光", "曝光量", "exposure", "impressions"]}
+      country:
+        synonyms: ["国家", "收货国家", "站点", "国家站点",
+                   "country", "site", "marketplace",
+                   "US", "DE", "JP", "GB", "FR", "CA", "AU",
+                   "美国", "德国", "日本", "英国", "法国", "加拿大", "澳大利亚"]
+      state: {synonyms: ["州", "省", "州省", "state", "province", "收货省份"]}
+      city: {synonyms: ["城市", "市", "city"]}
+      region:
+        synonyms: ["区域", "地区", "大区", "region",
+                   "华东", "华南", "华北", "西南", "东北", "华中", "西北"]
+      refund_status: {synonyms: ["退款状态", "退款", "refund_status", "售后状态"]}
+      refund_amount: {synonyms: ["退款金额", "已退款", "refund_amount"]}
+      pay_time: {synonyms: ["付款时间", "支付时间", "pay_time", "payment_time"]}
+      ship_time: {synonyms: ["发货时间", "出库时间", "ship_time"]}
+      deliver_time: {synonyms: ["妥投时间", "签收时间", "deliver_time"]}
+      logistics_company: {synonyms: ["物流公司", "物流商", "承运商", "logistics_company", "carrier"]}
+      cost: {synonyms: ["成本", "成本价", "进价", "cost"]}
+      platform_fee: {synonyms: ["平台佣金", "佣金", "平台费用", "platform_fee", "commission"]}
+      fba_fee: {synonyms: ["FBA费", "FBA费用", "配送费", "fba_fee"]}
+      ad_cost: {synonyms: ["广告费", "广告成本", "推广费", "ad_cost"]}
+      currency: {synonyms: ["币种", "货币", "currency", "币别"]}
+
+  # ============ 库存 ============
+  inventory:
+    fields:
+      platform:
+        synonyms: ["平台", "销售平台", "渠道", "platform", "channel",
+                   "Amazon", "亚马逊", "Shopee", "虾皮", "TikTok", "Temu",
+                   "Shein", "eBay", "Lazada", "Wish", "AliExpress", "速卖通",
+                   "Walmart", "沃尔玛", "Shopify", "淘宝", "天猫", "京东",
+                   "拼多多", "抖音", "快手", "小红书", "得物"]
+      mode:
+        synonyms: ["模式", "仓配模式", "履约模式", "mode",
+                   "FBA", "FBM", "海外仓", "本土店", "全托管", "半托管", "自营"]
+      shop: {synonyms: ["店铺", "店铺名称", "商家", "shop", "store"]}
+      warehouse: {synonyms: ["仓库", "仓库名称", "发货仓", "warehouse"]}
+      sku_code: {synonyms: ["SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]}
+      sku_name: {synonyms: ["SKU规格", "规格名称", "SKU名称", "规格"]}
+      product_id: {synonyms: ["商品ID", "货品ID", "spu_id", "product_id"]}
+      product_name: {synonyms: ["商品名称", "货品名称", "品名", "product_name"]}
+      category: {synonyms: ["类目", "分类", "category"]}
+      stock: {synonyms: ["当前库存", "库存", "可用库存", "库存数量", "实际库存", "stock"]}
+      safety_stock: {synonyms: ["安全库存", "警戒库存", "最低库存", "safety_stock"]}
+      in_transit: {synonyms: ["在途库存", "在途", "运输中", "in_transit"]}
+      locked_stock: {synonyms: ["锁定库存", "占用库存", "locked_stock"]}
+      daily_sales: {synonyms: ["日均销量", "日均", "daily_sales"]}
+      sales_30d: {synonyms: ["近30天销量", "30天销量", "月销", "sales_30d"]}
+      replenish_days: {synonyms: ["补货周期", "补货周期天数", "交期", "备货天数", "replenish_days"]}
+      safety_days: {synonyms: ["安全天数", "安全期", "缓冲天数", "safety_days"]}
+      cost: {synonyms: ["成本", "进价", "成本价", "cost"]}
+
+  # ============ 商品 ============
+  product:
+    fields:
+      product_id: {synonyms: ["商品ID", "货品ID", "spu_id", "product_id"]}
+      product_name: {synonyms: ["商品名称", "货品名称", "品名", "product_name"]}
+      category: {synonyms: ["类目", "分类", "category"]}
+      cost: {synonyms: ["成本", "成本价", "进价", "cost"]}
+
+  # ============ SKU ============
+  sku:
+    fields:
+      sku_code: {synonyms: ["SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]}
+      sku_name: {synonyms: ["SKU规格", "规格名称", "SKU名称", "规格"]}
+      product_id: {synonyms: ["商品ID", "货品ID", "spu_id", "product_id"]}
+      cost: {synonyms: ["成本", "成本价", "进价", "cost"]}
+
+  # ============ 素材 ============
+  material:
+    fields:
+      material_id: {synonyms: ["material_id", "素材ID", "素材编号", "id"]}
+      category: {synonyms: ["category", "类目", "分类", "素材类型"]}
+      raw_text: {synonyms: ["raw_text", "原始描述", "描述", "素材描述", "description"]}
+
+  # ============ Listing ============
+  listing:
+    fields:
+      pid: {synonyms: ["pid", "商品ID", "listing_id", "product_id"]}
+      raw_title: {synonyms: ["raw_title", "标题", "原始标题", "title"]}
+      raw_desc: {synonyms: ["raw_desc", "描述", "原始描述", "description"]}
+
+  # ============ 竞品价格 ============
+  pricing:
+    fields:
+      sku: {synonyms: ["sku", "货品编号", "商品编码", "编码", "SKU"]}
+      my_price: {synonyms: ["my_price", "我方价格", "我的价格", "本店价格"]}
+      competitor_price: {synonyms: ["competitor_price", "竞品价格", "对手价格", "竞对价格"]}
+
+  # ============ 广告 ============
+  ad:
+    fields:
+      campaign: {synonyms: ["campaign", "广告活动", "推广计划", "计划名称"]}
+      spend: {synonyms: ["spend", "花费", "消耗", "广告花费"]}
+      sales: {synonyms: ["sales", "销售", "销售额", "广告销售额"]}
+      clicks: {synonyms: ["clicks", "点击", "点击数", "click"]}
+      impressions: {synonyms: ["impressions", "曝光", "曝光量", "展现量"]}
+
+
+  # ============================================================
+  # 运营驾驶舱（dashboard）—— 不依赖具体字段，只做交叉分析
+  # ============================================================
+  dashboard:
+    fields:
+      platform:
+        synonyms: ["平台", "销售平台", "渠道", "platform", "channel",
+                   "Amazon", "亚马逊", "Shopee", "虾皮", "TikTok", "Temu",
+                   "淘宝", "天猫", "京东", "拼多多", "抖音", "得物"]
+      shop:
+        synonyms: ["店铺", "店铺名称", "商家", "shop", "store"]
+      sku_code:
+        synonyms: ["SKU编码", "SKU", "sku_code", "规格编码", "货品编号"]
+      stock:
+        synonyms: ["当前库存", "库存", "可用库存", "库存数量", "实际库存", "stock"]
+      daily_sales:
+        synonyms: ["日均销量", "日均", "daily_sales"]

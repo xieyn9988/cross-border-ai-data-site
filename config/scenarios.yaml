@@ -1,0 +1,33 @@
+scenarios:
+- name: 业务数据统计
+  enabled: true
+  handler: business_stat
+  description: 按区域聚合销售额、订单数、曝光量，计算转化率与客单价
+  params: {}
+- name: 素材批量处理
+  enabled: true
+  handler: material_process
+  description: 为每条素材生成 AI 绘图提示词
+  params: {}
+- name: Listing 页面优化
+  enabled: true
+  handler: listing_optimize
+  description: 优化标题与描述
+  params: {}
+- name: 库存预警
+  enabled: true
+  handler: inventory_alert
+  description: 库存低于阈值时预警
+  params:
+    threshold: 50
+- name: 竞品价格监控
+  enabled: true
+  handler: competitor_price
+  description: 对比竞品价格，标记价格偏高/偏低
+  params:
+    price_alert_pct: 0.1
+- name: 广告投放效果分析
+  enabled: true
+  handler: ad_performance
+  description: 计算 ROI / ACOS / CTR
+  params: {}
