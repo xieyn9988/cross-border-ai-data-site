@@ -185,10 +185,8 @@ async def process(
 
             for path in saved_paths:
                 try:
-                    cols = _read_columns(Path(path).read_bytes())
-                    #print(f"[DEBUG] handler={handler_name}, file={Path(path).name}, cols={cols}")
-                    r = mapper.evaluate_contract(entity, required, cols)
-                    #print(f"[DEBUG]   required={required}, supported={r['supported']}, missing={r['missing']}")
+                    cols = _read_columns(Path(path).read_bytes())                    
+                    r = mapper.evaluate_contract(entity, required, cols)                    
                     if r["supported"]:
                         matched_files.append(path)
                         if matched_eval is None:
@@ -199,8 +197,7 @@ async def process(
                             best_missing
                         ):
                             best_missing = r["missing"]                
-                except Exception as e:
-                    #print(f"[DEBUG] handler={handler_name}, file={Path(path).name}, EXCEPTION={type(e).__name__}: {e}")
+                except Exception as e:                    
                     continue
 
             # 没有任何文件匹配 → 报错（用最接近的缺字段信息）
