@@ -65,48 +65,25 @@ def list_available() -> Dict[str, Any]:
 # ============================================================
 @router.post("/api/workspace/recommend")
 async def recommend(files: List[UploadFile] = File(...)):
-    ...
+    if not files:
+        raise HTTPException(400, "没有上传文件")
+
     # 读所有文件的列名
-    all_columns = []
+    all_columns: List[List[str]] = []
     for f in files:
         content = await f.read()
         cols = _read_columns(content)
         all_columns.append(cols)
 
-    # 对每个场景，判断"它是否能匹配任意一个文件的列名"
     mapper = get_mapper()
 
-    scenarios = []
-    for c in mapper.contracts:
-        handler = c["handler"]
-        entity = c["entity"]
-        required = c.get("required_fields", [])
-
-        # 遍历每个文件的列名
-        best_supported = False
-        best_missing = []
-        for cols in all_columns:
-            r = mapper.evaluate_contract(entity, required, cols)
-            if r["supported"]:
-                best_supported = True
-                best_missing = []
-                break
-            if not best_missing or len(r["missing"]) < len(best_missing):
-                best_missing = r["missing"]
-
-        scenarios.append(
-            {
-                "handler": handler,
-                "name": c.get("name", handler),
-                "description": c.get("description", ""),
-                "required_fields": required,
-                "optional_fields": c.get("optional_fields", []),
-                "field_labels": c.get("field_labels", {}),
-                "supported": best_supported,
-                "mapping": {},
-                "missing": best_missing,
-            }
-        )
+    # ★ 关键：把"所有文件的列名"传给 evaluate_all
+    # 这样它才能精确判断"运营驾驶舱"这类多文件场景
+    scenarios = mapper.evaluate_all(
+        columns=all_columns[0] if all_columns else [],
+        all_columns=all_columns,
+        file_count=len(files),
+    )
 
     return {
         "file_count": len(files),
@@ -136,10 +113,8 @@ async def process(
     run_id = secrets.token_urlsafe(8)
     run_start = time.time()
 
-    # ---- 保存所有上传文件，并读取第一个文件的列名用于字段匹配 ----
+    # ---- 保存所有上传文件 ----
     saved_paths: List[str] = []
-    first_columns: List[str] = []
-
     for idx, uf in enumerate(files):
         if not uf.filename.endswith(".csv"):
             raise HTTPException(400, f"仅支持 CSV 文件：{uf.filename}")
@@ -148,8 +123,6 @@ async def process(
         with open(path, "wb") as f:
             f.write(content)
         saved_paths.append(str(path))
-        if idx == 0:
-            first_columns = _read_columns(content)
 
     # ---- 配置 ----
     cfg = get_config()
@@ -163,20 +136,16 @@ async def process(
     for handler_name in selected:
         contract = mapper.get_contract(handler_name)
         if contract is None:
-            results.append(
-                {
-                    "handler": handler_name,
-                    "status": "error",
-                    "message": f"未在 scenario_contracts.yaml 声明：{handler_name}",
-                }
-            )
+            results.append({
+                "handler": handler_name,
+                "status": "error",
+                "message": f"未在 scenario_contracts.yaml 声明：{handler_name}",
+            })
             continue
 
-        # 字段评估
         try:
             func = get_scenario(handler_name)
 
-            # ★ 逐个文件评估，找出"匹配本场景字段"的文件
             entity = contract["entity"]
             required = contract.get("required_fields", [])
             matched_files = []
@@ -185,33 +154,26 @@ async def process(
 
             for path in saved_paths:
                 try:
-                    cols = _read_columns(Path(path).read_bytes())                    
-                    r = mapper.evaluate_contract(entity, required, cols)                    
+                    cols = _read_columns(Path(path).read_bytes())
+                    r = mapper.evaluate_contract(entity, required, cols)
                     if r["supported"]:
                         matched_files.append(path)
                         if matched_eval is None:
-                            matched_eval = r  
+                            matched_eval = r
                     else:
-                        # 记录"最接近匹配"的错误（缺字段最少）
-                        if best_missing is None or len(r["missing"]) < len(
-                            best_missing
-                        ):
-                            best_missing = r["missing"]                
-                except Exception as e:                    
+                        if best_missing is None or len(r["missing"]) < len(best_missing):
+                            best_missing = r["missing"]
+                except Exception:
                     continue
 
-            # 没有任何文件匹配 → 报错（用最接近的缺字段信息）
             if not matched_files:
-                results.append(
-                    {
-                        "handler": handler_name,
-                        "status": "error",
-                        "message": f"上传文件缺少业务字段：{best_missing or required}",
-                    }
-                )
+                results.append({
+                    "handler": handler_name,
+                    "status": "error",
+                    "message": f"上传文件缺少业务字段：{best_missing or required}",
+                })
                 continue
 
-            # 特殊场景（多文件）：传所有文件；普通场景：只传匹配的文件
             if "required_files" in contract:
                 target_files = saved_paths
             else:
@@ -225,20 +187,17 @@ async def process(
             }
             df = func(cfg, params)
 
-            # 记录本次运行的产物
             candidates = [
                 p for p in RESULT_DIR.glob("*.csv") if p.stat().st_mtime >= run_start
             ]
             candidates.sort(key=lambda p: p.stat().st_mtime)
 
             if not candidates:
-                results.append(
-                    {
-                        "handler": handler_name,
-                        "status": "error",
-                        "message": "本次运行未产生输出文件",
-                    }
-                )
+                results.append({
+                    "handler": handler_name,
+                    "status": "error",
+                    "message": "本次运行未产生输出文件",
+                })
                 continue
 
             ts = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -252,52 +211,46 @@ async def process(
                 for fname, alias in output_files:
                     if (RESULT_DIR / fname).exists():
                         cn = f"{cn_name_base}_{alias}_{ts}.csv"
-                        downloads.append(
-                            {
-                                "download_token": fname,
-                                "download_name": cn,
-                                "download_url": (
-                                    f"/api/workspace/download/{fname}"
-                                    f"?as_name={quote(cn)}"
-                                ),
-                            }
-                        )
-                results.append(
-                    {
-                        "handler": handler_name,
-                        "status": "success",
-                        "rows": int(len(df)) if df is not None else 0,
-                        "downloads": downloads,
-                    }
-                )
+                        downloads.append({
+                            "download_token": fname,
+                            "download_name": cn,
+                            "download_url": (
+                                f"/api/workspace/download/{fname}"
+                                f"?as_name={quote(cn)}"
+                            ),
+                        })
+                results.append({
+                    "handler": handler_name,
+                    "status": "success",
+                    "rows": int(len(df)) if df is not None else 0,
+                    "downloads": downloads,
+                })
             else:
                 latest = candidates[-1]
                 cn_download_name = f"{cn_name_base}_{ts}.csv"
-                results.append(
-                    {
-                        "handler": handler_name,
-                        "status": "success",
-                        "rows": int(len(df)) if df is not None else 0,
-                        "download_token": latest.name,
-                        "download_name": cn_download_name,
-                        "download_url": (
-                            f"/api/workspace/download/{latest.name}"
-                            f"?as_name={quote(cn_download_name)}"
-                        ),
-                    }
-                )
-        except CrossBorderAIError as e:
-            results.append(
-                {"handler": handler_name, "status": "error", "message": str(e)}
-            )
-        except Exception as e:
-            results.append(
-                {
+                results.append({
                     "handler": handler_name,
-                    "status": "error",
-                    "message": f"{type(e).__name__}: {e}",
-                }
-            )
+                    "status": "success",
+                    "rows": int(len(df)) if df is not None else 0,
+                    "download_token": latest.name,
+                    "download_name": cn_download_name,
+                    "download_url": (
+                        f"/api/workspace/download/{latest.name}"
+                        f"?as_name={quote(cn_download_name)}"
+                    ),
+                })
+        except CrossBorderAIError as e:
+            results.append({
+                "handler": handler_name,
+                "status": "error",
+                "message": str(e),
+            })
+        except Exception as e:
+            results.append({
+                "handler": handler_name,
+                "status": "error",
+                "message": f"{type(e).__name__}: {e}",
+            })
 
     return {
         "run_id": run_id,
@@ -354,7 +307,6 @@ def capabilities() -> Dict[str, Any]:
 # ============================================================
 # 示例文件下载
 # ============================================================
-# 示例文件映射：(磁盘文件名, 用户下载时看到的名字)
 SAMPLE_MAP = {
     "order": ("order_sample_订单示例.csv", "订单明细示例.csv"),
     "material": ("material_素材列表.csv", "素材列表示例.csv"),
@@ -369,7 +321,6 @@ def download_sample(name: str) -> FileResponse:
     if name not in SAMPLE_MAP:
         raise HTTPException(404, "示例不存在")
 
-    # SAMPLE_MAP[name] 现在是 (磁盘名, 下载名) 元组
     disk_name, download_name = SAMPLE_MAP[name]
     path = REPO_ROOT / "data" / disk_name
 
@@ -378,7 +329,7 @@ def download_sample(name: str) -> FileResponse:
 
     return FileResponse(
         path,
-        filename=download_name,  # ★ 用中文下载名
+        filename=download_name,
         media_type="text/csv",
         headers={
             "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",

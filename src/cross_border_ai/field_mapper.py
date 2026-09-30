@@ -19,6 +19,12 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DICT = REPO_ROOT / "config" / "field_dictionary.yaml"
 DEFAULT_CONTRACTS = REPO_ROOT / "config" / "scenario_contracts.yaml"
 
+# 文件类型 → 业务化名称（用于"运营驾驶舱"这类多文件场景的提示）
+FILE_TYPE_LABELS = {
+    "order": "订单明细表",
+    "inventory": "库存表",
+}
+
 
 class FieldMapper:
     def __init__(
@@ -54,14 +60,10 @@ class FieldMapper:
     ) -> Dict[str, Optional[str]]:
         """返回 {业务字段: 实际列名}，未匹配到的字段值为 None。
 
-
-        未知实体不抛异常，返回空映射：
-        - 让 evaluate_contract 判定该场景"不适用"
-        - 不会因为契约里多声明了一个实体就整体崩溃
+        未知实体不抛异常，返回空映射。
         """
         if entity not in self.entities:
             return {}
-
 
         fields = self.entities[entity]["fields"]
         cols_lower = {c.strip().lower(): c for c in columns}
@@ -89,21 +91,62 @@ class FieldMapper:
             "missing": missing,
         }
 
+    def _check_file_type_matched(
+        self, file_type: str, all_columns: List[List[str]]
+    ) -> bool:
+        """检查"上传的文件"里是否有能匹配"某类文件"的。
+
+        例：file_type = "order" → 用 order 实体的前 3 个核心字段去匹配。
+        """
+        if file_type not in self.entities:
+            return False
+
+        entity_fields = list(self.entities[file_type]["fields"].keys())
+        # 只取前几个核心字段做快速判断，避免"文件必须完美匹配所有字段"
+        core_fields = entity_fields[:3]
+
+        for cols in all_columns:
+            r = self.evaluate_contract(file_type, core_fields, cols)
+            if r["supported"]:
+                return True
+        return False
+
     def evaluate_all(
-        self, columns: List[str], file_count: int = 1
+        self,
+        columns: List[str],
+        all_columns: Optional[List[List[str]]] = None,
+        file_count: int = 1,
     ) -> List[Dict[str, Any]]:
         """评估所有场景，返回可用性列表。
 
         参数：
-          columns:    上传文件的列名列表（用第一个文件）
-          file_count: 上传的文件数（用于判断"多文件场景"如运营驾驶舱）
+          columns:     上传文件的列名列表（用第一个文件，兼容旧调用）
+          all_columns: 所有上传文件的列名列表（用于精确判断多文件场景）
+          file_count:  上传的文件数
         """
+        if all_columns is None:
+            all_columns = [columns]
+
         out = []
         for c in self.contracts:
             # ---- 特殊场景：需要多文件（如运营驾驶舱）----
             if "required_files" in c:
-                required_count = len(c["required_files"])
-                supported = file_count >= required_count
+                required_types = c["required_files"]  # 例：["order", "inventory"]
+
+                matched_types = []
+                missing_types = []
+                for file_type in required_types:
+                    if self._check_file_type_matched(file_type, all_columns):
+                        matched_types.append(file_type)
+                    else:
+                        missing_types.append(file_type)
+
+                supported = len(missing_types) == 0
+
+                # 业务化提示
+                missing_names = [FILE_TYPE_LABELS.get(t, t) for t in missing_types]
+                required_names = [FILE_TYPE_LABELS.get(t, t) for t in required_types]
+
                 out.append({
                     "handler": c["handler"],
                     "name": c.get("name", c["handler"]),
@@ -112,15 +155,18 @@ class FieldMapper:
                     "required_fields": c.get("required_fields", []),
                     "optional_fields": c.get("optional_fields", []),
                     "field_labels": c.get("field_labels", {}),
-                    "supported": supported,                      # ★ 按文件数判断
+                    "supported": supported,
                     "mapping": {},
-                    "missing": [] if supported else [f"需要 {required_count} 个文件"],
-                    "note": None if supported else f"需要同时上传：{'、'.join(c['required_files'])}",
-                    "requires_files": c["required_files"],
+                    "missing": missing_types,
+                    "note": (
+                        None if supported
+                        else f"需要同时上传：{'、'.join(required_names)}（当前缺：{'、'.join(missing_names)}）"
+                    ),
+                    "requires_files": required_types,
                 })
                 continue
 
-            # ---- 普通场景：按字段匹配判断 ----
+            # ---- 普通场景：按字段匹配判断（用第一个文件的列名）----
             result = self.evaluate_contract(
                 c["entity"], c.get("required_fields", []), columns
             )

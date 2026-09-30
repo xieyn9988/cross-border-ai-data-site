@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 
 import pandas as pd
 
+from ..exceptions import BusinessLogicError
 from ..io_utils import read_csv_any_encoding, write_csv_with_labels
 from ..logger import setup_logger
 from ..scenario_registry import register_scenario
@@ -19,7 +20,12 @@ def business_dashboard(
 
     input_files: List[str] = params.get("input_files") or []
     if len(input_files) < 2:
-        raise ValueError("运营驾驶舱需要同时上传订单文件和库存文件")
+        raise BusinessLogicError(
+            "运营驾驶舱需要 2 份数据才能运行：\n"
+            "  1. 订单明细表（含订单编号、金额、付款时间）\n"
+            "  2. 库存表（含库存SKU、当前库存、日均销量）\n"
+            "请补充上传缺失的文件，再点击「开始处理」。"
+        )
 
     # 简单策略：根据文件名判断哪个是订单、哪个是库存
     order_files = []

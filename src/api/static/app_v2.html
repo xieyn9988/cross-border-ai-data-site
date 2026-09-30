@@ -4,9 +4,7 @@
     <meta charset="UTF-8" />
     <title>跨境智能数据工作台</title>
     <style>
-      * {
-        box-sizing: border-box;
-      }
+      * { box-sizing: border-box; }
       body {
         font-family: -apple-system, "PingFang SC", sans-serif;
         background: #f5f7fa;
@@ -14,19 +12,9 @@
         padding: 32px 16px;
         color: #1f2937;
       }
-      .container {
-        max-width: 880px;
-        margin: 0 auto;
-      }
-      h1 {
-        font-size: 22px;
-        margin: 0 0 4px;
-      }
-      .sub {
-        color: #6b7280;
-        font-size: 14px;
-        margin-bottom: 28px;
-      }
+      .container { max-width: 880px; margin: 0 auto; }
+      h1 { font-size: 22px; margin: 0 0 4px; }
+      .sub { color: #6b7280; font-size: 14px; margin-bottom: 28px; }
       .step {
         background: white;
         border-radius: 12px;
@@ -60,35 +48,15 @@
         cursor: pointer;
         transition: 0.2s;
       }
-      .dropzone:hover,
-      .dropzone.dragover {
+      .dropzone:hover, .dropzone.dragover {
         border-color: #2563eb;
         background: #eff6ff;
       }
-      .dropzone .icon {
-        font-size: 34px;
-        margin-bottom: 10px;
-      }
-      .dropzone .main-text {
-        font-size: 15px;
-        font-weight: 500;
-      }
-      .dropzone .hint {
-        color: #6b7280;
-        font-size: 13px;
-        margin-top: 6px;
-      }
-      .dropzone .formats {
-        color: #9ca3af;
-        font-size: 12px;
-        margin-top: 12px;
-      }
-      .sample-row {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 14px;
-      }
+      .dropzone .icon { font-size: 34px; margin-bottom: 10px; }
+      .dropzone .main-text { font-size: 15px; font-weight: 500; }
+      .dropzone .hint { color: #6b7280; font-size: 13px; margin-top: 6px; }
+      .dropzone .formats { color: #9ca3af; font-size: 12px; margin-top: 12px; }
+      .sample-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
       .sample-btn {
         background: #f3f4f6;
         border: 1px solid #e5e7eb;
@@ -99,9 +67,7 @@
         cursor: pointer;
         text-decoration: none;
       }
-      .sample-btn:hover {
-        background: #e5e7eb;
-      }
+      .sample-btn:hover { background: #e5e7eb; }
       .file-info {
         margin-top: 12px;
         padding: 12px 16px;
@@ -111,28 +77,16 @@
         font-size: 13px;
         display: none;
       }
-      .file-info.show {
-        display: block;
-      }
+      .file-info.show { display: block; }
       .file-info .cols {
         color: #4b5563;
         margin-top: 6px;
         font-size: 12px;
         word-break: break-all;
       }
-      .file-info .files-list {
-        margin: 6px 0 0 16px;
-        padding: 0;
-      }
-      .file-info.err {
-        background: #fef2f2;
-        color: #991b1b;
-      }
-      .scenarios {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
+      .file-info .files-list { margin: 6px 0 0 16px; padding: 0; }
+      .file-info.err { background: #fef2f2; color: #991b1b; }
+      .scenarios { display: flex; flex-direction: column; gap: 10px; }
       .scenario-item {
         display: flex;
         align-items: flex-start;
@@ -141,12 +95,8 @@
         border-radius: 8px;
         font-size: 14px;
       }
-      .scenario-item.supported {
-        cursor: pointer;
-      }
-      .scenario-item.supported:hover {
-        background: #f9fafb;
-      }
+      .scenario-item.supported { cursor: pointer; }
+      .scenario-item.supported:hover { background: #f9fafb; }
       .scenario-item.disabled {
         background: #fafafa;
         color: #9ca3af;
@@ -157,23 +107,15 @@
         margin-right: 10px;
         margin-top: 3px;
       }
-      .scenario-item .name {
-        font-weight: 500;
-      }
+      .scenario-item .name { font-weight: 500; }
       .scenario-item .tag {
         font-size: 11px;
         padding: 2px 8px;
         border-radius: 10px;
         margin-left: 8px;
       }
-      .tag.ok {
-        background: #d1fae5;
-        color: #065f46;
-      }
-      .tag.bad {
-        background: #fee2e2;
-        color: #991b1b;
-      }
+      .tag.ok { background: #d1fae5; color: #065f46; }
+      .tag.bad { background: #fee2e2; color: #991b1b; }
       .scenario-item .desc {
         color: #6b7280;
         font-size: 12px;
@@ -229,13 +171,8 @@
         font-weight: 600;
         cursor: pointer;
       }
-      .primary:hover {
-        background: #1d4ed8;
-      }
-      .primary:disabled {
-        background: #9ca3af;
-        cursor: not-allowed;
-      }
+      .primary:hover { background: #1d4ed8; }
+      .primary:disabled { background: #9ca3af; cursor: not-allowed; }
       .result-item {
         display: flex;
         align-items: center;
@@ -245,16 +182,9 @@
         flex-wrap: wrap;
         gap: 8px;
       }
-      .result-item:last-child {
-        border-bottom: none;
-      }
-      .result-item .name {
-        flex: 1;
-        min-width: 140px;
-      }
-      .result-item .badge {
-        margin-right: 12px;
-      }
+      .result-item:last-child { border-bottom: none; }
+      .result-item .name { flex: 1; min-width: 140px; }
+      .result-item .badge { margin-right: 12px; }
       .result-item .meta {
         color: #6b7280;
         margin-right: 12px;
@@ -266,13 +196,8 @@
         font-weight: 500;
         margin-right: 10px;
       }
-      .result-item a:hover {
-        text-decoration: underline;
-      }
-      .result-item .err-msg {
-        color: #dc2626;
-        font-size: 12px;
-      }
+      .result-item a:hover { text-decoration: underline; }
+      .result-item .err-msg { color: #dc2626; font-size: 12px; }
       .result-item .downloads {
         width: 100%;
         margin-left: 32px;
@@ -286,8 +211,12 @@
         padding-top: 12px;
         border-top: 1px solid #f3f4f6;
       }
-      .hidden {
-        display: none;
+      .hidden { display: none; }
+      details > summary {
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 13px;
+        padding: 8px 0;
       }
     </style>
   </head>
@@ -301,33 +230,18 @@
         <div class="dropzone" id="dropzone">
           <div class="icon">📁</div>
           <div class="main-text">点击选择，或拖拽 CSV 文件到此处</div>
-          <div class="hint">
-            系统会自动识别文件中的业务字段，匹配可用的分析场景
-          </div>
+          <div class="hint">系统会自动识别文件中的业务字段，匹配可用的分析场景</div>
           <div class="formats">
-            常见支持：订单明细 / 素材列表 / 商品 Listing / 库存表 / 竞品价 /
-            广告投放报表<br />支持一次选择多个文件
+            常见支持：订单明细 / 素材列表 / 商品 Listing / 库存表 / 竞品价 / 广告投放报表<br />支持一次选择多个文件
           </div>
         </div>
-        <input
-          type="file"
-          id="fileInput"
-          accept=".csv"
-          multiple
-          class="hidden"
-        />
+        <input type="file" id="fileInput" accept=".csv" multiple class="hidden" />
 
         <div class="sample-row">
-          <span style="color: #6b7280; font-size: 12px; align-self: center"
-            >没有数据？先试试示例：</span
-          >
+          <span style="color: #6b7280; font-size: 12px; align-self: center">没有数据？先试试示例：</span>
           <a class="sample-btn" data-sample="order" href="#">📥 订单明细示例</a>
-          <a class="sample-btn" data-sample="material" href="#"
-            >📥 素材列表示例</a
-          >
-          <a class="sample-btn" data-sample="listing" href="#"
-            >📥 Listing 示例</a
-          >
+          <a class="sample-btn" data-sample="material" href="#">📥 素材列表示例</a>
+          <a class="sample-btn" data-sample="listing" href="#">📥 Listing 示例</a>
           <a class="sample-btn" data-sample="inventory" href="#">📥 库存示例</a>
           <a class="sample-btn" data-sample="ad" href="#">📥 广告报表示例</a>
         </div>
@@ -340,9 +254,7 @@
           <span style="color: #2563eb">📋</span> 系统当前支持的分析场景
         </div>
         <div class="capability-grid" id="capabilityGrid">
-          <div style="color: #9ca3af; font-size: 13px; grid-column: 1/3">
-            加载中…
-          </div>
+          <div style="color: #9ca3af; font-size: 13px; grid-column: 1/3">加载中…</div>
         </div>
       </div>
 
@@ -405,12 +317,12 @@
                 .map((f) => `<code>${labels[f] || f}</code>`)
                 .join("");
               return `
-            <div class="cap-card">
-              <div class="cap-title">${s.name}</div>
-              <div class="cap-desc">${s.description || ""}</div>
-              <div class="cap-fields">需要字段：${fieldsHtml}</div>
-            </div>
-          `;
+                <div class="cap-card">
+                  <div class="cap-title">${s.name}</div>
+                  <div class="cap-desc">${s.description || ""}</div>
+                  <div class="cap-fields">需要字段：${fieldsHtml}</div>
+                </div>
+              `;
             })
             .join("");
         } catch (e) {
@@ -425,9 +337,7 @@
         e.preventDefault();
         DROPZONE.classList.add("dragover");
       });
-      DROPZONE.addEventListener("dragleave", () =>
-        DROPZONE.classList.remove("dragover"),
-      );
+      DROPZONE.addEventListener("dragleave", () => DROPZONE.classList.remove("dragover"));
       DROPZONE.addEventListener("drop", (e) => {
         e.preventDefault();
         DROPZONE.classList.remove("dragover");
@@ -437,7 +347,7 @@
         if (FILE_INPUT.files.length) handleFiles(FILE_INPUT.files);
       });
 
-      // ★ 核心：处理多文件
+      // 处理多文件
       async function handleFiles(files) {
         if (!files || !files.length) return;
 
@@ -453,7 +363,6 @@
         FILE_INFO.className = "file-info show";
         FILE_INFO.textContent = `正在识别 ${selectedFiles.length} 个文件…`;
 
-        // 用全部文件上传（后端用第一个识别列名）
         const form = new FormData();
         for (const f of selectedFiles) {
           form.append("files", f);
@@ -467,8 +376,7 @@
           if (!r.ok) {
             const err = await r.json().catch(() => ({ detail: "未知错误" }));
             FILE_INFO.className = "file-info show err";
-            FILE_INFO.textContent =
-              "❌ 识别失败：" + (err.detail || JSON.stringify(err));
+            FILE_INFO.textContent = "❌ 识别失败：" + (err.detail || JSON.stringify(err));
             STEP_SCENARIOS.classList.add("hidden");
             STEP_RUN.classList.add("hidden");
             return;
@@ -476,7 +384,6 @@
           const data = await r.json();
           renderFileInfo(selectedFiles, data);
           renderScenarios(data);
-          // ★ 清空结果区（避免显示上一次结果）
           RESULT_LIST.innerHTML = "";
           SUMMARY.textContent = "";
           STEP_SCENARIOS.classList.remove("hidden");
@@ -498,62 +405,105 @@
 
         FILE_INFO.className = "file-info show";
         FILE_INFO.innerHTML = `
-        ✅ 已选择 <strong>${files.length}</strong> 个文件：
-        <ul class="files-list">${fileList}</ul>
-        <div class="cols">以第一个文件识别列名：${preview}${more}</div>
-      `;
+          ✅ 已选择 <strong>${files.length}</strong> 个文件：
+          <ul class="files-list">${fileList}</ul>
+          <div class="cols">以第一个文件识别列名：${preview}${more}</div>
+        `;
       }
 
+      // ★ 核心改动：只显示可用场景 + 折叠不适用场景
       function renderScenarios(data) {
-        SCENARIOS.innerHTML = data.scenarios
-          .map((s) => {
-            const supported = s.supported;
-            const checked = "";            
-            const disabled = supported ? "" : "disabled";
-            const cls = supported ? "supported" : "disabled";
-            const tag = supported
-              ? `<span class="tag ok">可用</span>`
-              : `<span class="tag bad">不适用</span>`;
-            const desc = s.description
-              ? `<div class="desc">${s.description}</div>`
-              : "";
-            const labels = s.field_labels || {};
-            let missingHtml = "";
-            if (!supported) {
-              if (s.note) {
-                // 特殊场景（需要多文件）
-                missingHtml = `<div class="missing">${s.note}</div>`;
-              } else {
-                // 普通场景（缺字段）
-                missingHtml = `<div class="missing">缺少业务字段：${s.missing.map((f) => labels[f] || f).join("、")}</div>`;
-              }
-            }
-            return `
-          <label class="scenario-item ${cls}">
-            <input type="checkbox" value="${s.handler}" ${checked} ${disabled} />
-            <div style="flex:1;">
-              <div><span class="name">${s.name}</span>${tag}</div>
-              ${desc}
-              ${missingHtml}
+        const available = data.scenarios.filter((s) => s.supported);
+        const unavailable = data.scenarios.filter((s) => !s.supported);
+
+        // 情况 A：有可用场景
+        if (available.length > 0) {
+          const availableHtml = available
+            .map((s) => {
+              const desc = s.description ? `<div class="desc">${s.description}</div>` : "";
+              return `
+                <label class="scenario-item supported">
+                  <input type="checkbox" value="${s.handler}" />
+                  <div style="flex:1;">
+                    <div><span class="name">${s.name}</span><span class="tag ok">可用</span></div>
+                    ${desc}
+                  </div>
+                </label>
+              `;
+            })
+            .join("");
+
+          const collapsedHtml = unavailable.length > 0 ? `
+            <details style="margin-top:12px;">
+              <summary>▶ 查看其他 ${unavailable.length} 个场景（不适用）</summary>
+              <div style="margin-top:8px;">
+                ${unavailable
+                  .map((s) => {
+                    const labels = s.field_labels || {};
+                    const missingHtml =
+                      s.missing && s.missing.length
+                        ? `<div class="missing">缺少业务字段：${s.missing.map((f) => labels[f] || f).join("、")}</div>`
+                        : "";
+                    const noteHtml = s.note ? `<div class="missing">${s.note}</div>` : "";
+                    const desc = s.description ? `<div class="desc">${s.description}</div>` : "";
+                    return `
+                      <div class="scenario-item disabled" style="margin-bottom:8px;">
+                        <input type="checkbox" disabled style="margin-right:10px;" />
+                        <div style="flex:1;">
+                          <div><span class="name">${s.name}</span><span class="tag bad">不适用</span></div>
+                          ${desc}
+                          ${missingHtml}
+                          ${noteHtml}
+                        </div>
+                      </div>
+                    `;
+                  })
+                  .join("")}
+              </div>
+            </details>
+          ` : "";
+
+          SCENARIOS.innerHTML = availableHtml + collapsedHtml;
+        } else {
+          // 情况 B：没有可用场景
+          SCENARIOS.innerHTML = `
+            <div style="color:#dc2626;padding:16px;background:#fef2f2;border-radius:8px;">
+              ⚠️ <strong>上传的文件不匹配任何场景</strong>
+              <div style="margin-top:8px;font-size:13px;color:#991b1b;">
+                可能原因：
+                <ul style="margin:6px 0 0 16px;padding:0;">
+                  <li>文件没有表头（第一行是数据）</li>
+                  <li>列名和系统识别的字段不一致</li>
+                  <li>文件编码不是 UTF-8</li>
+                </ul>
+              </div>
+              <div style="margin-top:8px;font-size:13px;color:#991b1b;">
+                建议：先点击上方示例按钮下载示例文件，对照格式。
+              </div>
             </div>
-          </label>
-        `;
-          })
-          .join("");
-        SCENARIOS.querySelectorAll("input").forEach((el) =>
+          `;
+        }
+
+        // 绑定勾选事件
+        SCENARIOS.querySelectorAll("input:not(:disabled)").forEach((el) =>
           el.addEventListener("change", updateRunBtn),
         );
       }
 
+      // ★ 按钮文案动态变化
       function updateRunBtn() {
         if (!selectedFiles.length) {
           RUN_BTN.disabled = true;
+          RUN_BTN.textContent = "🚀 开始处理（请先上传文件）";
           return;
         }
-        const checked = [
-          ...SCENARIOS.querySelectorAll("input:checked:not(:disabled)"),
-        ];
+        const checked = [...SCENARIOS.querySelectorAll("input:checked:not(:disabled)")];
         RUN_BTN.disabled = checked.length === 0;
+        if (checked.length === 0) {
+          RUN_BTN.textContent = "🚀 开始处理（请先勾选场景）";
+        } else {
+          RUN_BTN.textContent = `🚀 开始处理（已选 ${checked.length} 个场景）`;
+        }
       }
 
       RUN_BTN.addEventListener("click", async () => {
@@ -584,8 +534,8 @@
         } catch (e) {
           alert("网络错误：" + e.message);
         } finally {
-          RUN_BTN.disabled = false;
-          RUN_BTN.textContent = "🚀 开始处理";
+          // 恢复按钮状态（由 updateRunBtn 统一管理）
+          updateRunBtn();
         }
       });
 
@@ -597,39 +547,36 @@
 
             if (r.status !== "success") {
               return `<div class="result-item">
-            <span class="badge">❌</span>
-            <span class="name">${label}</span>
-            <span class="err-msg">${r.message || "处理失败"}</span>
-          </div>`;
+                <span class="badge">❌</span>
+                <span class="name">${label}</span>
+                <span class="err-msg" style="white-space: pre-wrap;">${r.message || "处理失败"}</span>
+              </div>`;
             }
 
             if (r.downloads && r.downloads.length) {
               const links = r.downloads
                 .map((d) => {
-                  const display = d.download_name.replace(
-                    /_\d{8}_\d{6}\.csv$/,
-                    "",
-                  );
+                  const display = d.download_name.replace(/_\d{8}_\d{6}\.csv$/, "");
                   return `<a href="${d.download_url}" download="${d.download_name}">${display}</a>`;
                 })
                 .join("");
               return `<div class="result-item">
-            <span class="badge">✅</span>
-            <span class="name">${label}</span>
-            <span class="meta">${r.rows} 行 · ${r.downloads.length} 个文件</span>
-            <div class="downloads">${links}</div>
-          </div>`;
+                <span class="badge">✅</span>
+                <span class="name">${label}</span>
+                <span class="meta">${r.rows} 行 · ${r.downloads.length} 个文件</span>
+                <div class="downloads">${links}</div>
+              </div>`;
             }
 
             return `<div class="result-item">
-          <span class="badge">✅</span>
-          <span class="name">${label}</span>
-          <span class="meta">${r.rows} 行</span>
-          <a href="${r.download_url}" download="${r.download_name || ""}">下载</a>
-        </div>`;
+              <span class="badge">✅</span>
+              <span class="name">${label}</span>
+              <span class="meta">${r.rows} 行</span>
+              <a href="${r.download_url}" download="${r.download_name || ""}">下载</a>
+            </div>`;
           })
           .join("");
-        SUMMARY.textContent = `运行 ID: ${data.run_id} · 完成于 ${data.finished_at}<br/>上传文件：${(data.uploaded || []).join('、')}`;
+        SUMMARY.textContent = `运行 ID: ${data.run_id} · 完成于 ${data.finished_at} · 上传文件：${(data.uploaded || []).join("、")}`;
         RESULT_STEP.scrollIntoView({ behavior: "smooth" });
       }
     </script>
