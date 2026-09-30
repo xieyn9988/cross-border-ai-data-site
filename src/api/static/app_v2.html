@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>跨境智能数据工作台</title>
   <style>
     * {
@@ -451,6 +452,123 @@
       font-weight: 700;
       word-break: break-all;
     }
+
+    /* ============================================================
+         移动端适配（屏幕宽度 <= 768px）
+         ============================================================ */
+    @media (max-width: 768px) {
+      body {
+        padding: 16px 8px;
+      }
+
+      .container {
+        max-width: 100%;
+        padding: 0 4px;
+      }
+
+      h1 {
+        font-size: 18px;
+      }
+
+      .sub {
+        font-size: 12px;
+        margin-bottom: 16px;
+      }
+
+      .step {
+        padding: 16px 14px;
+      }
+
+      /* 上传区 */
+      .dropzone {
+        padding: 24px 16px;
+      }
+
+      .dropzone .icon {
+        font-size: 26px;
+      }
+
+      .dropzone .main-text {
+        font-size: 14px;
+      }
+
+      .dropzone .formats {
+        font-size: 11px;
+      }
+
+      /* 示例按钮：竖排 */
+      .sample-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .sample-btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      /* 场景列表 */
+      .scenario-item {
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+
+      /* 指标卡片：小屏两列 */
+      .summary-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .summary-card {
+        padding: 10px 12px;
+      }
+
+      .summary-card .summary-label {
+        font-size: 11px;
+      }
+
+      .summary-card .summary-value {
+        font-size: 16px;
+      }
+
+      /* 预览表格 */
+      .preview-wrap {
+        padding: 8px;
+      }
+
+      .preview-table th,
+      .preview-table td {
+        padding: 4px 6px;
+        font-size: 11px;
+      }
+
+      /* 按钮 */
+      .primary {
+        font-size: 15px;
+        padding: 12px;
+      }
+
+      /* 结果项：竖排 */
+      .result-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }
+
+      .result-item .name {
+        min-width: auto;
+      }
+
+      /* 能力卡片：单列 */
+      .capability-grid {
+        grid-template-columns: 1fr;
+      }
+
+      /* 历史记录 */
+      details>summary {
+        font-size: 12px;
+      }
+    }
   </style>
 </head>
 
@@ -541,6 +659,33 @@
     });
 
     // 上传前：拉契约，展示能力
+    // async function loadCapability() {
+    //   try {
+    //     const r = await fetch("/api/workspace/capabilities");
+    //     if (!r.ok) return;
+    //     const data = await r.json();
+    //     data.scenarios.forEach((s) => {
+    //       nameMap[s.handler] = s.name;
+    //     });
+    //     CAPABILITY_GRID.innerHTML = data.scenarios
+    //       .map((s) => {
+    //         const labels = s.field_labels || {};
+    //         const fieldsHtml = (s.required_fields || [])
+    //           .map((f) => `<code>${labels[f] || f}</code>`)
+    //           .join("");
+    //         return `
+    //             <div class="cap-card">
+    //               <div class="cap-title">${s.name}</div>
+    //               <div class="cap-desc">${s.description || ""}</div>
+    //               <div class="cap-fields">需要字段：${fieldsHtml}</div>
+    //             </div>
+    //           `;
+    //       })
+    //       .join("");
+    //   } catch (e) {
+    //     CAPABILITY_GRID.innerHTML = `<div style="color:#dc2626;font-size:13px;grid-column:1/3;">加载失败：${e.message}</div>`;
+    //   }
+    // }
     async function loadCapability() {
       try {
         const r = await fetch("/api/workspace/capabilities");
@@ -551,15 +696,10 @@
         });
         CAPABILITY_GRID.innerHTML = data.scenarios
           .map((s) => {
-            const labels = s.field_labels || {};
-            const fieldsHtml = (s.required_fields || [])
-              .map((f) => `<code>${labels[f] || f}</code>`)
-              .join("");
             return `
                 <div class="cap-card">
                   <div class="cap-title">${s.name}</div>
                   <div class="cap-desc">${s.description || ""}</div>
-                  <div class="cap-fields">需要字段：${fieldsHtml}</div>
                 </div>
               `;
           })
@@ -885,6 +1025,7 @@
         <span class="name">${label}</span>
         <span class="meta">${r.rows} 行</span>
         <a href="${r.download_url}" download="${r.download_name || ""}">下载</a>
+        ${summaryHtml}
         ${previewHtml}
       </div>`;
         })
