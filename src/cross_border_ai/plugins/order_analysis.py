@@ -75,6 +75,7 @@ def order_analysis(
         )
         summary["退款率"] = round(df["_is_refund"].mean(), 4)
 
+
     if all(c in df.columns for c in ["pay_time", "ship_time"]):
         df["_ship_hours"] = (df["ship_time"] - df["pay_time"]).dt.total_seconds() / 3600
         valid_hours = df["_ship_hours"].dropna()
@@ -287,6 +288,14 @@ def order_analysis(
             sku_profit[c] = sku_profit[c].round(2)
         write_csv_with_labels(sku_profit, f"{out_dir}/order_sku_profit.csv", labels)
         output_files.append(("order_sku_profit.csv", "SKU 利润分析"))
+
+    # ★ 关键指标卡片
+    df.attrs["summary"] = {
+        "总订单数": summary["总订单数"],
+        "总成交额": f"¥{summary['总成交额']:,.2f}",
+        "平均客单价": f"¥{summary['平均客单价']:,.2f}",
+        "退款率": f"{summary.get('退款率', 0) * 100:.1f}%",
+    }
 
     df.attrs["output_files"] = output_files
     logger.info("订单分析完成：%d 条订单，%d 份报告", len(df), len(output_files))

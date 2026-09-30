@@ -168,6 +168,17 @@ def inventory_alert(
         write_csv_with_labels(risk, f"{out_dir}/inventory_risk_top20.csv", labels)
         output_files.append(("inventory_risk_top20.csv", "缺货风险 Top 20"))
 
+    # ★ 关键指标卡片
+    total_sku = df["sku_code"].nunique()
+    urgent = df[df["预警状态"] == "紧急补货"]["sku_code"].nunique()
+    warning = df[df["预警状态"] == "低于安全库存"]["sku_code"].nunique()
+    df.attrs["summary"] = {
+        "SKU 总数": total_sku,
+        "紧急补货": urgent,
+        "低于安全库存": warning,
+        "库存健康率": f"{(1 - (urgent + warning) / total_sku) * 100:.1f}%" if total_sku else "—",
+    }
+
     df.attrs["output_files"] = output_files
-    logger.info("库存预警完成：%d 条 SKU，输出 %d 份报告", len(df), len(output_files))
+    logger.info("库存预警完成：...")
     return df

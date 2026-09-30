@@ -107,6 +107,15 @@ def cost_analysis(
         write_csv_with_labels(sku_cost, f"{out_dir}/cost_by_sku.csv", labels)
         output_files.append(("cost_by_sku.csv", "SKU 成本汇总"))
 
+    # ★ 关键指标卡片
+    total_amount = df["amount"].sum() if "amount" in df.columns else 0
+    total_profit = df["_profit"].sum() if "_profit" in df.columns else 0
+    df.attrs["summary"] = {
+        "总成交额": f"¥{total_amount:,.2f}",
+        "毛利": f"¥{total_profit:,.2f}",
+        "毛利率": f"{(total_profit / total_amount * 100):.1f}%" if total_amount else "—",
+    }
+
     df.attrs["output_files"] = output_files
-    logger.info("成本分析完成：%d 条记录", len(df))
+    logger.info("成本分析完成：...")
     return df

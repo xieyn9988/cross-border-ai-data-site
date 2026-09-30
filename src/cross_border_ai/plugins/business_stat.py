@@ -93,5 +93,12 @@ def calc_business_stat(
     write_csv_with_labels(stat, out, labels)
     stat.attrs["output_files"] = [("stat_result.csv", "业务数据统计")]
 
+    # ★ 关键指标卡片
+    stat.attrs["summary"] = {
+        "区域数": len(stat),
+        "总销售额": f"¥{stat['总销售额'].sum():,.2f}" if "总销售额" in stat.columns else "—",
+        "总订单数": int(stat["订单数"].sum()) if "订单数" in stat.columns else "—",
+    }
+
     logger.info("业务统计完成：%d 个区域，输出 %s", len(stat), out)
     return stat

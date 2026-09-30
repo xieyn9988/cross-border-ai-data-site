@@ -40,5 +40,17 @@ def ad_performance(
 
     out = f"{cfg['paths']['output_dir']}/ad_performance.csv"
     write_csv_with_labels(df, out, labels)
-    logger.info("广告效果分析完成，%d 条，输出 %s", len(df), out)
+
+    # ★ 关键指标卡片
+    total_spend = df["spend"].sum() if "spend" in df.columns else 0
+    total_sales = df["sales"].sum() if "sales" in df.columns else 0
+    roi = total_sales / total_spend if total_spend else 0
+    df.attrs["summary"] = {
+        "总花费": f"¥{total_spend:,.2f}",
+        "总销售额": f"¥{total_sales:,.2f}",
+        "全局 ROI": f"{roi:.2f}",
+        "广告活动数": len(df),
+    }
+
+    logger.info("广告效果分析完成：%d 条，输出 %s", len(df), out)
     return df

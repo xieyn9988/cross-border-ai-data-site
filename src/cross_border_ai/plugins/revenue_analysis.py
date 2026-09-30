@@ -87,6 +87,16 @@ def revenue_analysis(
         write_csv_with_labels(currency_stat, f"{out_dir}/revenue_by_currency.csv", labels)
         output_files.append(("revenue_by_currency.csv", "币种收入汇总"))
 
+    # ★ 关键指标卡片（必须在 return 之前）
+    total_amount = df["amount"].sum()
+    total_cny = df["_amount_cny"].sum() if df["_amount_cny"].notna().any() else None
+    df.attrs["summary"] = {
+        "总订单数": int(df["order_id"].nunique()) if "order_id" in df.columns else len(df),
+        "总成交额": f"¥{total_amount:,.2f}",
+        "折合人民币": f"¥{total_cny:,.2f}" if total_cny is not None else "—",
+        "平台数": int(df["platform"].nunique()) if "platform" in df.columns else "—",
+    }
+
     df.attrs["output_files"] = output_files
     logger.info("收入分析完成：%d 条记录", len(df))
     return df

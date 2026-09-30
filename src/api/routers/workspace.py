@@ -244,6 +244,8 @@ async def process(
                     "status": "success",
                     "rows": int(len(df)) if df is not None else 0,
                     "downloads": downloads,
+                    "summary": (df.attrs.get("summary") if df is not None else {}) or {},
+                    "preview": _build_preview(df),
                 })
             else:
                 latest = candidates[-1]
@@ -258,6 +260,7 @@ async def process(
                         f"/api/workspace/download/{latest.name}"
                         f"?as_name={quote(cn_download_name)}"
                     ),
+                    "summary": (df.attrs.get("summary") if df is not None else {}) or {},
                     # ★ 新增：预览数据
                     "preview": _build_preview(df),
                 })
