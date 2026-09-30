@@ -14,7 +14,7 @@ def main() -> None:
     print("🚀 启动 API：http://localhost:8000/admin")
     print("   按 Ctrl+C 停止服务")
     subprocess.call(
-        [sys.executable, "-m", "uvicorn", "api.main:app", "--reload", "--port", "8000"],
+        [sys.executable, "-m", "uvicorn", "api.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"],
         cwd=str(REPO_ROOT),
         env=env,
     )
