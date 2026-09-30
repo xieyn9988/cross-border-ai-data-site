@@ -218,6 +218,49 @@
         font-size: 13px;
         padding: 8px 0;
       }
+            .preview-wrap {
+        width: 100%;
+        margin-top: 8px;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 8px;
+        font-size: 13px;
+      }
+      .preview-title {
+        color: #6b7280;
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+      .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+      .preview-table th,
+      .preview-table td {
+        padding: 6px 10px;
+        text-align: left;
+        border-bottom: 1px solid #f3f4f6;
+        white-space: nowrap;
+      }
+      .preview-table th {
+        background: #f3f4f6;
+        color: #374151;
+        font-weight: 600;
+        font-size: 12px;
+      }
+      .preview-table tr:last-child td {
+        border-bottom: none;
+      }
+      .preview-more {
+        color: #9ca3af;
+        font-size: 12px;
+        margin-top: 6px;
+        text-align: right;
+      }
     </style>
   </head>
   <body>
@@ -540,45 +583,77 @@
       });
 
       function renderResults(data) {
-        RESULT_STEP.classList.remove("hidden");
-        RESULT_LIST.innerHTML = data.results
-          .map((r) => {
-            const label = nameMap[r.handler] || r.handler;
+  RESULT_STEP.classList.remove("hidden");
+  RESULT_LIST.innerHTML = data.results
+    .map((r) => {
+      const label = nameMap[r.handler] || r.handler;
 
-            if (r.status !== "success") {
-              return `<div class="result-item">
-                <span class="badge">❌</span>
-                <span class="name">${label}</span>
-                <span class="err-msg" style="white-space: pre-wrap;">${r.message || "处理失败"}</span>
-              </div>`;
-            }
+      // ---- 失败 ----
+      if (r.status !== "success") {
+        return `<div class="result-item">
+          <span class="badge">❌</span>
+          <span class="name">${label}</span>
+          <span class="err-msg" style="white-space: pre-wrap;">${r.message || "处理失败"}</span>
+        </div>`;
+      }
 
-            if (r.downloads && r.downloads.length) {
-              const links = r.downloads
-                .map((d) => {
-                  const display = d.download_name.replace(/_\d{8}_\d{6}\.csv$/, "");
-                  return `<a href="${d.download_url}" download="${d.download_name}">${display}</a>`;
-                })
-                .join("");
-              return `<div class="result-item">
-                <span class="badge">✅</span>
-                <span class="name">${label}</span>
-                <span class="meta">${r.rows} 行 · ${r.downloads.length} 个文件</span>
-                <div class="downloads">${links}</div>
-              </div>`;
-            }
+      // ---- 成功：构造预览 ----
+      let previewHtml = "";
+      if (r.preview && r.preview.columns && r.preview.columns.length > 0) {
+        const cols = r.preview.columns;
+        const rows = r.preview.rows;
+        const shown = r.preview.shown;
+        const total = r.preview.total;
 
-            return `<div class="result-item">
-              <span class="badge">✅</span>
-              <span class="name">${label}</span>
-              <span class="meta">${r.rows} 行</span>
-              <a href="${r.download_url}" download="${r.download_name || ""}">下载</a>
-            </div>`;
+        const headerCells = cols.map(c => `<th>${c}</th>`).join("");
+        const bodyRows = rows.map(row =>
+          `<tr>${row.map(v => `<td>${v === null || v === undefined ? "" : v}</td>`).join("")}</tr>`
+        ).join("");
+
+        previewHtml = `
+          <div class="preview-wrap">
+            <div class="preview-title">
+              结果预览：前 ${shown} 行 / 共 ${total} 行
+            </div>
+            <table class="preview-table">
+              <thead><tr>${headerCells}</tr></thead>
+              <tbody>${bodyRows}</tbody>
+            </table>
+            ${total > shown ? `<div class="preview-more">仅显示前 ${shown} 行，下载查看完整数据</div>` : ""}
+          </div>
+        `;
+      }
+
+      // ---- 多文件场景 ----
+      if (r.downloads && r.downloads.length) {
+        const links = r.downloads
+          .map((d) => {
+            const display = d.download_name.replace(/_\d{8}_\d{6}\.csv$/, "");
+            return `<a href="${d.download_url}" download="${d.download_name}">${display}</a>`;
           })
           .join("");
-        SUMMARY.textContent = `运行 ID: ${data.run_id} · 完成于 ${data.finished_at} · 上传文件：${(data.uploaded || []).join("、")}`;
-        RESULT_STEP.scrollIntoView({ behavior: "smooth" });
+        return `<div class="result-item">
+          <span class="badge">✅</span>
+          <span class="name">${label}</span>
+          <span class="meta">${r.rows} 行 · ${r.downloads.length} 个文件</span>
+          <div class="downloads">${links}</div>
+          ${previewHtml}
+        </div>`;
       }
+
+      // ---- 单文件场景 ----
+      return `<div class="result-item">
+        <span class="badge">✅</span>
+        <span class="name">${label}</span>
+        <span class="meta">${r.rows} 行</span>
+        <a href="${r.download_url}" download="${r.download_name || ""}">下载</a>
+        ${previewHtml}
+      </div>`;
+    })
+    .join("");
+  SUMMARY.textContent = `运行 ID: ${data.run_id} · 完成于 ${data.finished_at} · 上传文件：${(data.uploaded || []).join("、")}`;
+  RESULT_STEP.scrollIntoView({ behavior: "smooth" });
+}
     </script>
   </body>
 </html>

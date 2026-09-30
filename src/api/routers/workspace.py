@@ -52,6 +52,26 @@ def _read_columns(content: bytes) -> List[str]:
     return [str(c) for c in df.columns]
 
 
+def _build_preview(df, max_rows: int = 10) -> Dict[str, Any]:
+    """构造 DataFrame 的预览数据：列名 + 前 N 行 + 总行数。"""
+    if df is None or df.empty:
+        return {"columns": [], "rows": [], "total": 0, "shown": 0}
+
+    total = len(df)
+    shown_df = df.head(max_rows)
+
+    # 把 NaN 转成 None（JSON 不支持 NaN）
+    rows = []
+    for _, row in shown_df.iterrows():
+        rows.append([None if pd.isna(v) else v for v in row.tolist()])
+
+    return {
+        "columns": [str(c) for c in df.columns],
+        "rows": rows,
+        "total": int(total),
+        "shown": int(len(shown_df)),
+    }
+
 # ============================================================
 # 场景列表
 # ============================================================
@@ -238,6 +258,8 @@ async def process(
                         f"/api/workspace/download/{latest.name}"
                         f"?as_name={quote(cn_download_name)}"
                     ),
+                    # ★ 新增：预览数据
+                    "preview": _build_preview(df),
                 })
         except CrossBorderAIError as e:
             results.append({
